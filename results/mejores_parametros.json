@@ -1,0 +1,27 @@
+{
+  "mejor_modelo_test": "SVD ajustado",
+  "svd": {
+    "params": {
+      "n_factors": 50,
+      "n_epochs": 40,
+      "lr_all": 0.01,
+      "reg_all": 0.1,
+      "random_state": 42
+    },
+    "rmse_cv": 0.9309213154742205,
+    "rmse_test": 0.9115233096486147
+  },
+  "knn": {
+    "algoritmo": "KNNBaseline",
+    "params": {
+      "k": 40,
+      "sim_options": {
+        "name": "msd",
+        "user_based": true
+      },
+      "verbose": false
+    },
+    "rmse_cv": 0.9421975806764508,
+    "rmse_test": 0.9289944047954715
+  }
+}

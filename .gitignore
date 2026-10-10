@@ -1,0 +1,15 @@
+# Datos: se descargan al ejecutar el paso 1
+data/ml-100k/
+data/processed/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Sistema / editores (la carpeta .vscode sí se versiona: indica el intérprete .venv)
+.DS_Store
+Thumbs.db
+.idea/

@@ -1,0 +1,119 @@
+
+====================================================================================================
+PASO 3 · DETECCIÓN DE COMUNIDADES Y VISUALIZACIÓN
+====================================================================================================
+
+1. Red de similitud entre las 80 películas más populares
+--------------------------------------------------------
+
+  » Peso entre dos películas = lift de co-valoración = |Ua ∩ Ub| · |U| / (|Ua| · |Ub|), donde Ua son
+    los usuarios que valoraron a. Un lift de 1.5 significa que se co-valoran un 50 % más de lo
+    esperado por azar. Contar co-valoraciones brutas haría que todo se conecte con los blockbusters;
+    el lift corrige ese sesgo. Cada película se une a sus 4 vecinas de mayor lift: grafo disperso y
+    conexo.
+
+Nodos: 80 | Aristas: 249 | Conexo: True
+
+2. Girvan–Newman
+----------------
+
+Modularidad Q en los primeros niveles de la jerarquía:
+       n_comunidades  modularidad
+nivel                            
+1                  2        0.239
+2                  3        0.492
+3                  4        0.602
+4                  5        0.610
+5                  6        0.610
+6                  7        0.609
+7                  8        0.602
+8                  9        0.597
+9                 10        0.588
+10                11        0.583
+
+Mejor corte: 5 comunidades, modularidad Q = 0.610
+
+  » Modularidad: fracción de aristas dentro de las comunidades menos la esperada al azar. Sobre ~0.3
+    ya indica estructura clara.
+  [gráfico] results\figures\03_girvan_newman_modularidad.png
+
+Comunidades encontradas por Girvan–Newman:
+           n_peliculas  anio_mediano %_estrenos_96_97                                                                                       peliculas_representativas
+comunidad                                                                                                                                                            
+1                   22          1986               5%                 Star Wars; Return of the Jedi; Raiders of the Lost Ark; Pulp Fiction; Silence of the Lambs, The
+2                   19          1996              63%                                         Fargo; Toy Story; Independence Day (ID4); Twelve Monkeys; Jerry Maguire
+3                   16          1997             100%                                                 Contact; Liar Liar; English Patient, The; Scream; Air Force One
+4                   15          1989               0%  Back to the Future; Forrest Gump; Monty Python and the Holy Grai; E.T. the Extra-Terrestrial; Schindler's List
+5                    8          1970               0%               Godfather, The; Amadeus; One Flew Over the Cuckoo's Nes; 2001: A Space Odyssey; Wizard of Oz, The
+
+  » Las comunidades no son géneros puros sino PÚBLICOS (grupos de películas que ve el mismo tipo de
+    usuario):
+   • 1 · Culto y saga Star Wars: Star Wars, Return of the Jedi, Raiders, Pulp Fiction, Silence of
+     the Lambs.
+   • 2 · Taquilla 1995-96: Fargo, Toy Story, Independence Day, Twelve Monkeys.
+   • 3 · Cartelera 1997: Contact, Liar Liar, Scream, Air Force One, Titanic (100 % estrenos
+     1996-97).
+   • 4 · Populares familiares de los 80-90: Back to the Future, Forrest Gump, E.T., Monty Python.
+   • 5 · Clásicos del cine: The Godfather, Casablanca, 2001, Wizard of Oz.
+  » La comunidad 3 es la más aislada (se ve separada en el gráfico). La ÉPOCA (cuándo se estrenó la
+    película y cuándo llegó el usuario) organiza la red tanto como el género.
+
+3. Visualización de la red de películas por comunidad
+-----------------------------------------------------
+  [gráfico] results\figures\03_red_peliculas_comunidades.png
+
+4. Louvain sobre el grafo bipartito completo
+--------------------------------------------
+Louvain: 4 comunidades, modularidad Q = 0.260
+
+Comunidades encontradas por Louvain:
+           usuarios  peliculas  anio_mediano %_usuarios_llegados_1998                                                                        peliculas_mas_vistas
+comunidad                                                                                                                                                        
+1               170        589          1994                      39%                      Fugitive, The; Indiana Jones and the Last; Terminator, The; Braveheart
+2               256        455          1990                      45%  Raiders of the Lost Ark; Pulp Fiction; Silence of the Lambs, The; Empire Strikes Back, The
+3               265        342          1996                      29%                                             Star Wars; Fargo; Return of the Jedi; Toy Story
+4               252        296          1997                      62%                                            Contact; Liar Liar; English Patient, The; Scream
+
+  » Modularidad moderada (Q = 0.26): hay comunidades, pero muy solapadas porque casi todos ven los
+    mismos éxitos. Reaparece el patrón temporal: la comunidad 4 reúne los estrenos de 1997 y es la
+    de más usuarios recién llegados, mientras que la comunidad 2 agrupa los éxitos de los 80.
+
+Índice de Rand ajustado GN vs. Louvain (80 películas): 0.488
+
+Tabla cruzada (filas: comunidad GN, columnas: comunidad Louvain):
+Louvain        1   2   3   4
+Girvan-Newman               
+1              9  10   3   0
+2              0   0  19   0
+3              0   0   1  15
+4              1  14   0   0
+5              0   7   1   0
+
+  » Acuerdo moderado (0 sería azar, 1 coincidencia total). Las comunidades "Taquilla 1995-96" y
+    "Cartelera 1997" de Girvan–Newman coinciden casi exactamente con las comunidades 3 y 4 de
+    Louvain; los tres bloques más antiguos Louvain los reparte entre sus comunidades 1 y 2. Los
+    métodos difieren a propósito: GN trabaja sobre una red corregida por popularidad con 80
+    películas; Louvain sobre las 100 000 interacciones crudas.
+
+5. Visualización del grafo bipartito por comunidades (Louvain)
+--------------------------------------------------------------
+  [gráfico] results\figures\03_bipartito_comunidades_louvain.png
+Aristas dentro de la misma comunidad: 366 | entre comunidades: 851 (70%)
+
+  » Muestra: los 10 usuarios más activos y las 10 películas más vistas de cada comunidad (círculos =
+    usuarios, cuadrados = películas). Aunque cada comunidad tiene sus aristas internas (en color),
+    el 70% de las aristas cruza entre comunidades (en gris): los usuarios más activos ven de todo.
+    Por eso la modularidad global es moderada y la estructura se aprecia mejor en la red de
+    similitud de Girvan–Newman.
+
+====================================================================================================
+CONCLUSIÓN DEL PASO 3
+====================================================================================================
+
+   • Girvan–Newman (red de 80 películas): 5 comunidades, Q = 0.61; interpretables como culto/Star
+     Wars, taquilla 1995-96, cartelera 1997, populares familiares y clásicos.
+   • Louvain (grafo completo): 4 comunidades, Q = 0.26; estructura real pero difusa.
+   • Hallazgo transversal: la época organiza la red tanto como el género. El filtrado colaborativo
+     (Parte 2) capta estos patrones latentes sin usar metadatos.
+
+  » Siguiente: python pasos\paso4_modelos_svd_knn.py

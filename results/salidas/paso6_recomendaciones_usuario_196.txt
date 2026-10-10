@@ -1,0 +1,97 @@
+
+====================================================================================================
+PASO 6 · TOP-5 RECOMENDACIONES PARA EL USUARIO 196
+====================================================================================================
+
+1. ¿Quién es el usuario? (su historial)
+---------------------------------------
+Usuario 196: 39 películas calificadas, nota media 3.62
+
+Sus películas favoritas (5 estrellas):
+                              titulo
+1  Ace Ventura: Pet Detective (1994)
+2     American President, The (1995)
+3                        Babe (1995)
+4                 Being There (1979)
+5        English Patient, The (1996)
+6        Fish Called Wanda, A (1988)
+7              Secrets & Lies (1996)
+8                 Stand by Me (1986)
+
+2. Entrenamiento de los modelos ajustados con todo el dataset
+-------------------------------------------------------------
+SVD {'n_factors': 50, 'n_epochs': 40, 'lr_all': 0.01, 'reg_all': 0.1, 'random_state': 42}
+KNNBaseline {'k': 40, 'sim_options': {'name': 'msd', 'user_based': True}, 'verbose': False}
+Entrenados con 100,000 calificaciones
+
+3. Primer intento: Top-5 sin filtros
+------------------------------------
+
+SVD:
+   item_id                            titulo rating_estimado  num_calificaciones
+1     1449            Pather Panchali (1955)            4.55                   8
+2     1367                      Faust (1994)            4.50                   5
+3       64  Shawshank Redemption, The (1994)            4.41                 283
+4      408             Close Shave, A (1995)            4.41                 112
+5      318           Schindler's List (1993)            4.39                 298
+
+KNNBaseline:
+   item_id                                             titulo rating_estimado  num_calificaciones
+1      814                      Great Day in Harlem, A (1994)            5.00                   1
+2     1500                          Santa with Muscles (1996)            5.00                   2
+3     1536                               Aiqing wansui (1994)            5.00                   1
+4     1599                      Someone Else's America (1995)            5.00                   1
+5     1653  Entertaining Angels: The Dorothy Day Story (1996)            4.99                   1
+
+  » PROBLEMA: aparecen películas con muy pocas calificaciones (a veces una sola) y nota estimada
+    cercana a 5. Con tan poca evidencia la predicción no es confiable: basta que un vecino haya
+    puesto 5. Es un problema clásico de los recomendadores (sesgo de baja evidencia). SOLUCIÓN:
+    recomendar solo películas con al menos 20 calificaciones (el mismo umbral que GroupLens usó para
+    incluir usuarios). Es una regla de negocio común en sistemas reales.
+
+4. Top-5 final (películas con >= 20 calificaciones)
+---------------------------------------------------
+
+>>> RETO: Top-5 para el usuario 196 — SVD ajustado (mejor modelo, RMSE test 0.912)
+   item_id                            titulo rating_estimado  num_calificaciones
+1       64  Shawshank Redemption, The (1994)            4.41                 283
+2      408             Close Shave, A (1995)            4.41                 112
+3      318           Schindler's List (1993)            4.39                 298
+4      603                Rear Window (1954)            4.38                 209
+5      134               Citizen Kane (1941)            4.35                 198
+
+Para contrastar — KNNBaseline ajustado (RMSE test 0.929)
+   item_id                                                  titulo rating_estimado  num_calificaciones
+1       64                        Shawshank Redemption, The (1994)            4.60                 283
+2      114  Wallace & Gromit: The Best of Aardman Animation (1996)            4.57                  67
+3      318                                 Schindler's List (1993)            4.56                 298
+4      408                                   Close Shave, A (1995)            4.55                 112
+5      178                                     12 Angry Men (1957)            4.50                 125
+
+Películas en común entre ambos Top-5 (3 de 5): Close Shave, A (1995), Schindler's List (1993), Shawshank Redemption, The (1994)
+
+5. ¿Las recomendaciones son realmente personalizadas?
+-----------------------------------------------------
+
+Top-5 (SVD) de tres usuarios con perfiles distintos:
+            Usuario 196 (39 vistas)       Usuario 405 (737 vistas)             Usuario 13 (636 vistas)
+1  Shawshank Redemption, The (1994)   It's a Wonderful Life (1946)               Close Shave, A (1995)
+2             Close Shave, A (1995)                Die Hard (1988)          Wrong Trousers, The (1993)
+3           Schindler's List (1993)          My Man Godfrey (1936)              Wings of Desire (1987)
+4                Rear Window (1954)  Affair to Remember, An (1957)  Wallace & Gromit: The Best of Aard
+5               Citizen Kane (1941)     Singin' in the Rain (1952)               Third Man, The (1949)
+
+  » Si el modelo recomendara lo mismo a todos, sería un ranking de popularidad disfrazado. Las
+    listas son distintas para cada perfil: el modelo sí personaliza. Con usuarios de poco historial
+    tiende hacia películas de amplio consenso, que es la forma prudente de recomendar cuando hay
+    poca información.
+
+====================================================================================================
+CONCLUSIÓN DEL PASO 6
+====================================================================================================
+
+   • Top-5 para el usuario 196 (SVD ajustado): Shawshank Redemption, The (1994); Close Shave, A
+     (1995); Schindler's List (1993); Rear Window (1954); Citizen Kane (1941).
+   • SVD y KNN coinciden en 3 de 5 películas: el núcleo de la recomendación es robusto al modelo.
+   • Lección práctica: un buen RMSE no garantiza un buen Top-N; hizo falta un umbral de evidencia
+     para que las recomendaciones sean confiables.

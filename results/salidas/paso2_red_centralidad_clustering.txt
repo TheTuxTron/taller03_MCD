@@ -1,0 +1,143 @@
+
+====================================================================================================
+PASO 2 · GRAFO BIPARTITO: CENTRALIDAD Y AGRUPAMIENTO
+====================================================================================================
+
+1. Construcción del grafo
+-------------------------
+¿Es bipartito?: True
+¿Es conexo?   : True
+                                      valor
+Nodos usuario                           943
+Nodos película                         1682
+Aristas (calificaciones)            100,000
+Densidad bipartita |E| / (|U|·|M|)    0.063
+Grado medio usuario                   106.0
+Grado medio película                   59.5
+
+2. Centralidad de grado
+-----------------------
+
+  » El grado de un usuario es cuántas películas calificó (actividad); el de una película, cuántos
+    usuarios la calificaron (popularidad). La centralidad de grado bipartita lo normaliza por el
+    tamaño del conjunto opuesto: C(u) = grado(u) / |M| y C(m) = grado(m) / |U|.
+
+>>> RETO: los 5 usuarios que califican más películas
+   user_id  peliculas_calificadas centralidad_grado
+1      405                    737             43.8%
+2      655                    685             40.7%
+3       13                    636             37.8%
+4      450                    540             32.1%
+5      276                    518             30.8%
+
+Las 10 películas más populares (mayor grado):
+                           titulo  num_calificaciones centralidad_grado
+1                Star Wars (1977)                 583             61.8%
+2                  Contact (1997)                 509             54.0%
+3                    Fargo (1996)                 508             53.9%
+4       Return of the Jedi (1983)                 507             53.8%
+5                Liar Liar (1997)                 485             51.4%
+6     English Patient, The (1996)                 481             51.0%
+7                   Scream (1996)                 478             50.7%
+8                Toy Story (1995)                 452             47.9%
+9            Air Force One (1997)                 431             45.7%
+10  Independence Day (ID4) (1996)                 429             45.5%
+  [gráfico] results\figures\02_distribucion_grado.png
+
+  » Ambas distribuciones son muy asimétricas (cola larga). El usuario más activo (id 405) calificó
+    737 películas, el 44% del catálogo, frente a unas 106 del usuario típico. Unas pocas películas
+    concentran muchas aristas: son los "hubs" de la red.
+
+3. ¿Cuáles son las películas más centrales?
+-------------------------------------------
+
+   • Grado: cuántos usuarios la calificaron (popularidad directa).
+   • Vector propio: importancia por estar conectada a nodos importantes. Se usa
+     eigenvector_centrality_numpy porque en grafos bipartitos la iteración de potencias oscila y no
+     converge.
+   • Intermediación: cuántos caminos más cortos pasan por ella (películas "puente"). Se aproxima con
+     300 nodos fuente (semilla fija) porque el cálculo exacto es O(|V|·|E|).
+  » Al final se combinan las tres posiciones en un ranking promedio.
+
+Vector propio calculado en 3.6 s
+Intermediación (aprox. k=300) calculada en 21.3 s
+
+>>> RETO: las 10 películas más centrales (ranking promedio de las 3 métricas)
+                            titulo  calificaciones  puesto_grado  puesto_vector_propio  puesto_intermediacion
+1                 Star Wars (1977)             583             1                     1                      5
+2        Return of the Jedi (1983)             507             4                     2                      8
+3                     Fargo (1996)             508             3                     4                      7
+4                   Contact (1997)             509             2                    19                      1
+5                 Toy Story (1995)             452             8                     9                      9
+6    Independence Day (ID4) (1996)             429            10                     7                     14
+7   Raiders of the Lost Ark (1981)             420            11                     3                     19
+8                 Liar Liar (1997)             485             5                    26                      4
+9              Pulp Fiction (1994)             394            13                     5                     20
+10           Godfather, The (1972)             413            12                    15                     11
+
+Top-5 según cada métrica:
+               Top por grado           Top por vector propio       Top por intermediación
+1           Star Wars (1977)                Star Wars (1977)               Contact (1997)
+2             Contact (1997)       Return of the Jedi (1983)  English Patient, The (1996)
+3               Fargo (1996)  Raiders of the Lost Ark (1981)                Scream (1996)
+4  Return of the Jedi (1983)                    Fargo (1996)             Liar Liar (1997)
+5           Liar Liar (1997)             Pulp Fiction (1994)             Star Wars (1977)
+
+Correlación de Spearman entre las tres métricas (películas):
+                   centralidad_grado  eigenvector  betweenness
+centralidad_grado              1.000        0.984        0.976
+eigenvector                    0.984        1.000        0.946
+betweenness                    0.976        0.946        1.000
+
+   • A nivel global las tres métricas están muy correlacionadas (Spearman entre 0.946 y 0.984): una
+     película popular suele ser central en cualquier sentido.
+   • La diferencia está en la cima. El vector propio premia a los clásicos (Return of the Jedi,
+     Raiders of the Lost Ark, Pulp Fiction) porque los ven los usuarios más activos; la
+     intermediación la lideran los estrenos de 1996-97 (Contact, The English Patient, Scream, Liar
+     Liar).
+   • Caso revelador: Contact (1997) es 2.ª en grado y 1.ª en intermediación, pero 19.ª en vector
+     propio. La vieron muchos usuarios nuevos (llegaron en 1997-98 y calificaron lo que estaba en
+     cartelera), poco conectados con el núcleo: Contact es el PUENTE entre esa cohorte y el resto de
+     la red.
+   • Star Wars (1977) es la película más central: 1.ª en grado, 1.ª en vector propio y 5.ª en
+     intermediación.
+
+4. Coeficiente de agrupamiento
+------------------------------
+Agrupamiento clásico promedio: 0.0
+
+  » El coeficiente clásico cuenta triángulos, y en un grafo bipartito no puede haberlos (un ciclo de
+    3 uniría dos nodos del mismo tipo): vale 0 siempre. Por eso se usa el agrupamiento bipartito de
+    Latapy et al. (2008): para dos nodos del mismo tipo mide |N(u) ∩ N(v)| / |N(u) ∪ N(v)|, es
+    decir, cuánto se parecen sus historiales. Tarda alrededor de 1 minuto...
+
+Agrupamiento bipartito calculado en 56.0 s
+
+Agrupamiento bipartito:
+           promedio  mediana  máximo
+Usuarios     0.0888   0.0870  0.1437
+Películas    0.0618   0.0581  0.1170
+  [gráfico] results\figures\02_clustering_vs_grado.png
+
+Correlación de Spearman grado vs. agrupamiento: usuarios 0.817 | películas 0.555
+
+   • Los valores son bajos (≈0.09 usuarios, ≈0.06 películas): dos usuarios que comparten una
+     película comparten en promedio menos del 10 % de su historial. La red es dispersa y
+     heterogénea: los gustos son personales, lo que justifica el filtrado colaborativo frente a
+     "recomendar lo más popular a todos".
+   • La relación con el grado es positiva. Los usuarios muy activos han visto buena parte de lo que
+     ven los demás: forman el NÚCLEO de la red. Los usuarios con pocas películas tienen historiales
+     particulares que casi no se solapan: están en la PERIFERIA. Parte del efecto es mecánico (con
+     más películas es más fácil coincidir), por eso el agrupamiento se interpreta junto al grado.
+
+====================================================================================================
+CONCLUSIÓN DEL PASO 2
+====================================================================================================
+
+   • 5 usuarios más activos: 405 (737), 655 (685), 13 (636), 450 (540), 276 (518).
+   • Película más central: Star Wars (1977).
+   • Películas puente: estrenos de 1996-97 (Contact, The English Patient, Scream).
+   • Agrupamiento bajo y creciente con el grado: núcleo de usuarios activos, periferia de usuarios
+     ocasionales.
+
+  » Siguiente: python pasos\paso3_comunidades_visualizacion.py

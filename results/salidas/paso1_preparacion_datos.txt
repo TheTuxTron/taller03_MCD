@@ -1,0 +1,67 @@
+
+====================================================================================================
+PASO 1 · PREPARACIÓN DE DATOS — MOVIELENS 100K
+====================================================================================================
+
+1. Descarga
+-----------
+Descargando https://files.grouplens.org/datasets/movielens/ml-100k.zip ...
+Listo: archivos extraídos en data\ml-100k
+
+2. Carga y estructura
+---------------------
+ratings: 100,000 filas x 5 columnas | películas: 1,682
+
+Primeras filas de u.data:
+   user_id  item_id  rating  timestamp               fecha
+0      196      242       3  881250949 1997-12-04 15:55:49
+1      186      302       3  891717742 1998-04-04 19:22:22
+2       22      377       1  878887116 1997-11-07 07:18:36
+3      244       51       2  880606923 1997-11-27 05:02:03
+4      166      346       1  886397596 1998-02-02 05:33:16
+
+Resumen del dataset:
+                                                            valor
+Calificaciones                                            100,000
+Usuarios                                                      943
+Películas                                                    1682
+Densidad de la matriz usuario x película                    6.30%
+Calificación promedio                                        3.53
+Mín. calificaciones por usuario                                20
+Periodo                                   1997-09-20 a 1998-04-22
+Duplicados (usuario, película)                                  0
+Valores nulos                                                   0
+
+  » La matriz usuario x película está casi vacía (6.3% de celdas con dato). Ese es el problema que
+    resuelve un sistema de recomendación: estimar el 94% restante. Cada usuario tiene al menos 20
+    calificaciones (así lo construyó GroupLens): no hay usuarios "fríos".
+
+3. Distribuciones
+-----------------
+
+Calificaciones por número de estrellas:
+rating             1      2      3      4      5
+calificaciones  6110  11370  27145  34174  21201
+  [gráfico] results\figures\01_distribuciones.png
+
+  » Las notas se concentran en 3-4 estrellas (sesgo positivo típico). La popularidad sigue una cola
+    larga: la película más vista tiene 583 calificaciones, pero la mediana es de solo 27. En el
+    grafo esto se verá como nodos "hub".
+
+4. Guardado y partición train/test (80/20, semilla fija)
+--------------------------------------------------------
+train: 80,000 filas | test: 20,000 filas
+Filas de test con usuario no visto en train : 0
+Filas de test con película no vista en train: 31
+
+  » La partición se hace una sola vez. El ajuste de hiperparámetros (paso 5) usa solo train y test
+    queda reservado para la evaluación final: todos los modelos se comparan sobre exactamente los
+    mismos datos.
+
+====================================================================================================
+CONCLUSIÓN DEL PASO 1
+====================================================================================================
+
+  » Dataset listo: 943 usuarios, 1,682 películas y 100,000 calificaciones, sin nulos ni duplicados.
+
+  » Siguiente: python pasos\paso2_red_centralidad_clustering.py

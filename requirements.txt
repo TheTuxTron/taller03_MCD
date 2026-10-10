@@ -1,0 +1,11 @@
+networkx>=3.2
+scipy>=1.11
+matplotlib>=3.8
+pandas>=2.1
+numpy>=1.26
+scikit-learn>=1.3
+# 1.1.5 trae binarios para Windows (Python 3.10 a 3.13): no requiere compilador de C
+scikit-surprise>=1.1.5
+
+# Usa los certificados de Windows para HTTPS (evita CERTIFICATE_VERIFY_FAILED al descargar el dataset)
+truststore>=0.9
