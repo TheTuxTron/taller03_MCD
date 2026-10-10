@@ -1,7 +1,5 @@
 # Taller III — Análisis de Redes y Sistemas de Recomendación
 
-**Maestría en Ciencia de Datos · Universidad Yachay Tech**
-Autor: Joel
 
 Análisis del dataset **MovieLens 100K** desde dos ángulos:
 
